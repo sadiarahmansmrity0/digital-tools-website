@@ -4,7 +4,7 @@ A modern, fully responsive e-commerce platform for digital tools and premium ass
 
 ## 🌟 Live Demo
 
-[View Live Demo](https://your-live-link.netlify.app)
+[View Live Demo](https://digital-tools-website-0097.netlify.app/)
 
 ## 📖 Description
 
