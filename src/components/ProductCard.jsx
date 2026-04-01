@@ -1,5 +1,5 @@
 import React from 'react';
-
+ 
 import writingIcon from "../assets/products/writing_2327400 1.png";
 import designIcon from "../assets/products/design-tool.png";
 import assetIcon from "../assets/products/portfolio.png";
