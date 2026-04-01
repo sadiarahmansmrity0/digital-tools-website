@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import Navbar from "./components/Navbar";
 import Banner from "./components/Banner";
 import Stats from "./components/Stats";
@@ -19,6 +18,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -38,22 +38,29 @@ function App() {
     fetchProducts();
   }, []);
 
+  // Sync Cart Count and LocalStorage
   useEffect(() => {
     const totalCount = cart.reduce((total, item) => total + item.quantity, 0);
     setCartCount(totalCount);
     localStorage.setItem('digiToolsCart', JSON.stringify(cart));
   }, [cart]);
 
+  // Total Price Calculation for the Checkout section
+  const totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+  // ADD TO CART logic
   const addToCart = (product) => {
-    setCart(prevCart => {
-      const isItemInCart = prevCart.find(item => item.id === product.id);
+    setCart((prevCart) => {
+      const isItemInCart = prevCart.find((item) => item.id === product.id);
+      
       if (isItemInCart) {
-        toast.info(`${product.name} quantity increased!`);
-        return prevCart.map(item =>
+        toast.info(`${product.name} quantity increased!`, { toastId: `inc-${product.id}` });
+        return prevCart.map((item) =>
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      toast.success(`${product.name} added to cart!`);
+
+      toast.success(`${product.name} added to cart!`, { toastId: `add-${product.id}` });
       return [...prevCart, { ...product, quantity: 1 }];
     });
   };
@@ -63,55 +70,61 @@ function App() {
     toast.warning(`${name} removed!`);
   };
 
-  const totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading Premium Tools...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen font-bold text-purple-600">Loading Premium Tools...</div>;
 
   return (
     <div className="min-h-screen bg-[#FDFDFF] font-sans">
       <ToastContainer position="top-right" autoClose={2000} limit={3} />
+      
       <Navbar cartCount={cartCount} />
       <Banner />
       <Stats />
-
+      
       <main className="max-w-7xl mx-auto px-6 py-20">
+        
+        {/* 1. Header Section Added*/}
         <div className="text-center mb-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-[#0F172A] mb-4">Premium Digital Tools</h2>
-          <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto">
-            Choose from our curated collection of premium digital products designed to boost your productivity and creativity.
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[#0F172A] mb-4 tracking-tight">
+            Premium Digital Tools
+          </h2>
+          <p className="text-slate-500 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+            Choose from our curated collection of premium digital products designed 
+            to boost your productivity and creativity.
           </p>
         </div>
 
+        {/* Error Display */}
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-2xl mb-8 text-center border border-red-100">
             Error: {error}. Please check your JSON file.
           </div>
         )}
 
+        {/* Toggle Buttons */}
         <div className="flex justify-center mb-12 gap-4">
-          <button
-            onClick={() => setActiveTab('products')}
-            className={`px-10 py-3 rounded-full font-bold transition-all ${activeTab === 'products' ? 'bg-[#7C3AED] text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:border-purple-300'}`}
+          <button 
+            onClick={() => setActiveTab('products')} 
+            className={`px-10 py-3 rounded-full font-bold transition-all ${activeTab === 'products' ? 'bg-[#7C3AED] text-white shadow-lg shadow-purple-200' : 'bg-white text-slate-600 border border-slate-200 hover:border-purple-300'}`}
           >
             Products
           </button>
-          <button
-            onClick={() => setActiveTab('cart')}
-            className={`px-10 py-3 rounded-full font-bold transition-all ${activeTab === 'cart' ? 'bg-[#7C3AED] text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:border-purple-300'}`}
+          <button 
+            onClick={() => setActiveTab('cart')} 
+            className={`px-10 py-3 rounded-full font-bold transition-all ${activeTab === 'cart' ? 'bg-[#7C3AED] text-white shadow-lg shadow-purple-200' : 'bg-white text-slate-600 border border-slate-200 hover:border-purple-300'}`}
           >
             Cart ({cartCount})
           </button>
         </div>
 
-        {activeTab === 'products' && (
+        {/* 2. Products Grid */}
+        {activeTab === 'products' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
             {products.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
             ))}
           </div>
-        )}
-
-        {activeTab === 'cart' && (
+        ) : (
+          /* 3. Cart Section with Total Summary */
           <div className="max-w-3xl mx-auto">
             {cart.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-slate-200">
@@ -124,6 +137,8 @@ function App() {
                     <CartItem key={item.id} item={item} onRemove={removeFromCart} />
                   ))}
                 </div>
+
+                {/* Total & Checkout Section  */}
                 <div className="mt-10 pt-8 border-t border-slate-100">
                   <div className="flex justify-between items-end mb-8">
                     <div>
@@ -134,7 +149,8 @@ function App() {
                       ${totalPrice}
                     </span>
                   </div>
-                  <button
+
+                  <button 
                     onClick={() => toast.success("Proceeding to payment...")}
                     className="w-full bg-[#7C3AED] text-white py-5 rounded-2xl font-extrabold text-lg hover:bg-[#6D28D9] transition-all transform active:scale-[0.98] shadow-2xl shadow-purple-200"
                   >
